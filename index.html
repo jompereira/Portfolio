@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>José Pereira — Gameplay Programmer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -122,7 +123,7 @@
       </div>
 
       <div class="project-video">
-        <iframe src="https://www.youtube.com/embed/hEMgLRqBQwY" title="Road Kings — Official Reveal Trailer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <iframe src="https://www.youtube.com/embed/hEMgLRqBQwY" title="Road Kings — Official Reveal Trailer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
       </div>
 
       <div class="project-links">
@@ -181,7 +182,7 @@
       </div>
 
       <div class="project-video">
-        <iframe src="https://www.youtube.com/embed/tIZbFEyN8Uc" title="Dakar Desert Rally — Official Launch Trailer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <iframe src="https://www.youtube.com/embed/tIZbFEyN8Uc" title="Dakar Desert Rally — Official Launch Trailer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
       </div>
 
       <div class="project-links">
@@ -190,7 +191,7 @@
     </div>
 
     <!-- INDIE ROW -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">
+    <div class="projects-row">
 
       <!-- MAZE RACER -->
       <div class="project-card reveal">
@@ -199,7 +200,7 @@
           <span class="project-year">2026</span>
           <span class="project-platforms">iOS · Android</span>
         </div>
-        <h3 class="project-title" style="font-size: clamp(20px, 2.5vw, 28px);">Maze Racer</h3>
+        <h3 class="project-title project-title--small">Maze Racer</h3>
         <p class="project-role">Role: <span>Solo Developer</span></p>
         <p class="project-desc">
           Mobile maze racing game built end-to-end solo. Handled <strong>full development cycle</strong>: 
@@ -226,7 +227,7 @@
           <span class="project-year">2025</span>
           <span class="project-platforms">iOS · Android</span>
         </div>
-        <h3 class="project-title" style="font-size: clamp(20px, 2.5vw, 28px);">Connect Colors</h3>
+        <h3 class="project-title project-title--small">Connect Colors</h3>
         <p class="project-role">Role: <span>Solo Developer</span></p>
         <p class="project-desc">
           Mobile logic puzzle game shipped independently. Handled all aspects from 
@@ -247,6 +248,56 @@
       </div>
 
     </div>
+
+    <!-- MAZE GENERATOR VISUALIZER -->
+    <div class="project-card reveal">
+      <div class="project-meta">
+        <span class="project-type">Personal · Solo</span>
+        <span class="project-year">2024</span>
+        <span class="project-platforms">Web</span>
+      </div>
+      <h3 class="project-title">Maze Generator Visualizer</h3>
+      <p class="project-role">Role: <span>Solo Developer</span></p>
+
+      <div class="project-body">
+        <div>
+          <p class="project-desc">
+            An interactive browser-based visualizer for <strong>9 maze generation algorithms</strong> —
+            Recursive Backtracker, Prim's, Kruskal's, Wilson's, Aldous-Broder, Hunt & Kill,
+            Sidewinder, Binary Tree, and Eller's. Built to deepen understanding of graph traversal
+            and procedural generation techniques.
+          </p>
+          <div class="tech-list">
+            <span class="tech-tag">JavaScript</span>
+            <span class="tech-tag">p5.js</span>
+            <span class="tech-tag">Procedural Generation</span>
+            <span class="tech-tag">Graph Algorithms</span>
+          </div>
+          <div class="project-links">
+            <a href="https://github.com/jompereira/MazeGeneratorVisualizer" target="_blank" class="btn btn-ghost">GitHub →</a>
+            <a href="https://jompereira.github.io/MazeGeneratorVisualizer/" target="_blank" class="btn btn-ghost">Live Demo →</a>
+          </div>
+        </div>
+
+        <div class="highlights">
+          <p class="highlight-label">Algorithms</p>
+          <div class="highlight-item">
+            <span class="highlight-icon">→</span>
+            <p class="highlight-text"><strong>Recursive Backtracker</strong>, <strong>Prim's</strong>, <strong>Kruskal's</strong> — spanning tree approaches</p>
+          </div>
+          <div class="highlight-item">
+            <span class="highlight-icon">→</span>
+            <p class="highlight-text"><strong>Wilson's</strong>, <strong>Aldous-Broder</strong> — uniform spanning tree with random walks</p>
+          </div>
+          <div class="highlight-item">
+            <span class="highlight-icon">→</span>
+            <p class="highlight-text"><strong>Hunt & Kill</strong>, <strong>Sidewinder</strong>, <strong>Binary Tree</strong>, <strong>Eller's</strong> — row-based approaches</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 </section>
 
@@ -361,6 +412,8 @@
   }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
 
   reveals.forEach(el => observer.observe(el));
+
+
 </script>
 </body>
 </html>

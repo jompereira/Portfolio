@@ -5,7 +5,8 @@
   --accent: #c8f542;
   --accent2: #42f5a7;
   --text: #f0f0f0;
-  --muted: #666;
+  --muted: #888;
+  --text-dim: #999;
   --border: #222;
   --tag-bg: #1a1a1a;
 }
@@ -30,7 +31,7 @@ body::before {
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
   pointer-events: none;
-  z-index: 1000;
+  z-index: 2;
   opacity: 0.4;
 }
 
@@ -317,6 +318,10 @@ section {
   color: var(--text);
 }
 
+.project-title--small {
+  font-size: clamp(20px, 2.5vw, 28px);
+}
+
 .project-role {
   font-size: 12px;
   color: var(--muted);
@@ -339,7 +344,7 @@ section {
 }
 
 .project-desc {
-  color: #999;
+  color: var(--text-dim);
   font-size: 13px;
   line-height: 1.9;
   margin-bottom: 24px;
@@ -392,7 +397,7 @@ section {
 
 .highlight-text {
   font-size: 12px;
-  color: #888;
+  color: var(--muted);
   line-height: 1.7;
 }
 
@@ -411,7 +416,7 @@ section {
 }
 
 .about-text {
-  color: #999;
+  color: var(--text-dim);
   font-size: 13px;
   line-height: 1.9;
 }
@@ -420,7 +425,6 @@ section {
 
 .about-text p + p { margin-top: 20px; }
 
-.skills-block { }
 
 .skill-group {
   margin-bottom: 32px;
@@ -444,7 +448,7 @@ section {
   font-size: 12px;
   padding: 6px 14px;
   border: 1px solid var(--border);
-  color: #aaa;
+  color: var(--text-dim);
   transition: border-color 0.2s, color 0.2s;
 }
 
@@ -551,7 +555,7 @@ footer {
   aspect-ratio: 16 / 9;
   border: 1px solid var(--border);
   overflow: hidden;
-  background: #000;
+  background: var(--bg);
   max-width: 480px;
 }
 
@@ -572,6 +576,17 @@ footer {
 .project-links .btn {
   font-size: 11px;
   padding: 8px 16px;
+}
+
+/* PROJECTS ROW */
+.projects-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+}
+
+@media (max-width: 640px) {
+  .projects-row { grid-template-columns: 1fr; }
 }
 
 /* MOBILE */
