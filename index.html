@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>José Pereira — Gameplay Programmer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #181818;
+    --accent: #c8f542;
+    --accent2: #42f5a7;
+    --text: #f0f0f0;
+    --muted: #666;
+    --border: #222;
+    --tag-bg: #1a1a1a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 20px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s, background 0.3s;
+  }
+
+  nav.scrolled {
+    border-color: var(--border);
+    background: rgba(10,10,10,0.95);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .nav-logo span { color: var(--accent); }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 80% 20%, rgba(200, 245, 66, 0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 20% 80%, rgba(66, 245, 167, 0.04) 0%, transparent 60%);
+  }
+
+  .hero-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.2s;
+  }
+
+  .hero-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(56px, 8vw, 120px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    color: var(--text);
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.35s;
+  }
+
+  .hero-name .dim { color: var(--muted); }
+
+  .hero-sub {
+    margin-top: 32px;
+    max-width: 520px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.8;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.5s;
+  }
+
+  .hero-sub strong { color: var(--text); font-weight: 400; }
+
+  .hero-cta {
+    margin-top: 48px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.65s;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    text-decoration: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .btn:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .btn-ghost {
+    border-color: var(--border);
+    color: var(--muted);
+  }
+
+  .btn-ghost:hover {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--muted);
+  }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 40px;
+    right: 48px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.8s;
+  }
+
+  .scroll-line {
+    width: 40px;
+    height: 1px;
+    background: var(--muted);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scroll-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--accent);
+    animation: scanline 2s ease-in-out infinite;
+  }
+
+  /* SECTION */
+  section {
+    padding: 120px 48px;
+    position: relative;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    margin-bottom: 72px;
+  }
+
+  .section-num {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: clamp(28px, 4vw, 48px);
+    letter-spacing: -0.03em;
+    color: var(--text);
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    max-width: 200px;
+  }
+
+  /* PROJECTS */
+  .projects-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 48px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+    cursor: default;
+  }
+
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 0;
+    background: var(--accent);
+    transition: height 0.4s ease;
+  }
+
+  .project-card:hover { border-color: #333; }
+  .project-card:hover::before { height: 100%; }
+
+  .project-card.featured::before { background: var(--accent2); }
+
+  .project-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .project-type {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(200,245,66,0.3);
+    padding: 3px 10px;
+  }
+
+  .project-type.aaa { color: var(--accent2); border-color: rgba(66,245,167,0.3); }
+
+  .project-year {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .project-platforms {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  .project-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(24px, 3vw, 40px);
+    letter-spacing: -0.03em;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .project-role {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    letter-spacing: 0.05em;
+  }
+
+  .project-role span {
+    color: var(--accent);
+  }
+
+  .project-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+
+  @media (max-width: 768px) {
+    .project-body { grid-template-columns: 1fr; }
+  }
+
+  .project-desc {
+    color: #999;
+    font-size: 13px;
+    line-height: 1.9;
+    margin-bottom: 24px;
+  }
+
+  .project-desc strong { color: var(--text); font-weight: 400; }
+
+  .tech-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .tech-tag {
+    font-size: 11px;
+    padding: 4px 12px;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .highlights {
+    border-left: 1px solid var(--border);
+    padding-left: 32px;
+  }
+
+  .highlight-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .highlight-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+
+  .highlight-icon {
+    color: var(--accent);
+    font-size: 12px;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .highlight-text {
+    font-size: 12px;
+    color: #888;
+    line-height: 1.7;
+  }
+
+  .highlight-text strong { color: var(--text); font-weight: 400; }
+
+  /* ABOUT / SKILLS */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .about-grid { grid-template-columns: 1fr; gap: 48px; }
+  }
+
+  .about-text {
+    color: #999;
+    font-size: 13px;
+    line-height: 1.9;
+  }
+
+  .about-text strong { color: var(--text); font-weight: 400; }
+
+  .about-text p + p { margin-top: 20px; }
+
+  .skills-block { }
+
+  .skill-group {
+    margin-bottom: 32px;
+  }
+
+  .skill-group-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .skill-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .skill-item {
+    font-size: 12px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    color: #aaa;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .skill-item:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* CONTACT */
+  .contact-section {
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 120px 48px;
+  }
+
+  .contact-big {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(40px, 7vw, 100px);
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    margin-bottom: 48px;
+    color: var(--text);
+  }
+
+  .contact-big span { color: var(--accent); }
+
+  .contact-links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 32px 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes scanline {
+    0% { left: -100%; }
+    50% { left: 100%; }
+    100% { left: 100%; }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 48px;
+  }
+
+  /* STATUS DOT */
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 16px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent2);
+    box-shadow: 0 0 8px var(--accent2);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* MOBILE */
+  @media (max-width: 640px) {
+    nav, .hero, section, .contact-section, footer { padding-left: 24px; padding-right: 24px; }
+    .hero-scroll { right: 24px; }
+    .divider { margin: 0 24px; }
+    .project-card { padding: 32px 24px; }
+    .highlights { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 32px; margin-top: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="#" class="nav-logo">JP<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <p class="hero-label">Gameplay Programmer · Porto, Portugal</p>
+  <h1 class="hero-name">
+    José<br>
+    <span class="dim">Pereira</span>
+  </h1>
+  <p class="hero-sub">
+    6+ years shipping <strong>AAA vehicle simulation games</strong>. 
+    Specialised in AI systems, vehicle physics, and Unreal Engine C++.<br>
+    Credits include <strong>Road Kings</strong> and <strong>Dakar Desert Rally</strong>.
+  </p>
+  <div class="hero-cta">
+    <a href="#projects" class="btn">View Work</a>
+    <a href="mailto:jose_miguel_pereira@hotmail.com" class="btn btn-ghost">Get in Touch</a>
+  </div>
+  <div class="status">
+    <span class="status-dot"></span>
+    Open to new opportunities
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    Scroll
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-header reveal">
+    <span class="section-num">01</span>
+    <h2 class="section-title">Projects</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="projects-grid">
+
+    <!-- ROAD KINGS -->
+    <div class="project-card reveal">
+      <div class="project-meta">
+        <span class="project-type aaa">AAA · Saber Interactive Porto</span>
+        <span class="project-year">2023 – 2026</span>
+        <span class="project-platforms">PC · PS5 · Xbox</span>
+      </div>
+      <h3 class="project-title">Road Kings</h3>
+      <p class="project-role">Role: <span>Lead AI Programmer</span></p>
+
+      <div class="project-body">
+        <div>
+          <p class="project-desc">
+            A next-generation trucking simulator set in the American South, built on Unreal Engine 5. 
+            Published by Focus Entertainment. My responsibility was the <strong>entire traffic AI system</strong> — 
+            from architecture to delivery — supporting hundreds of simultaneous vehicles.
+          </p>
+          <p class="project-desc">
+            Extended and heavily re-engineered Unreal Engine's CitySample traffic framework to handle 
+            AAA simulation-grade demands: <strong>robust vehicle awareness, speed management, and cornering</strong> 
+            that the base sample couldn't support at scale. Leveraged the <strong>Mass Entity framework</strong> 
+            for high-performance entity simulation.
+          </p>
+          <p class="project-desc">
+            A key architectural decision was designing a <strong>unified physics interface</strong> shared by 
+            player and NPC vehicles — ensuring every physics improvement automatically applied to traffic, 
+            eliminating duplication and keeping behaviour consistent throughout development.
+          </p>
+          <div class="tech-list">
+            <span class="tech-tag">Unreal Engine 5</span>
+            <span class="tech-tag">Mass Entity</span>
+            <span class="tech-tag">C++</span>
+            <span class="tech-tag">CitySample</span>
+            <span class="tech-tag">Spline Systems</span>
+            <span class="tech-tag">Vehicle Physics</span>
+          </div>
+        </div>
+
+        <div class="highlights">
+          <p class="highlight-label">Key Contributions</p>
+          <div class="highlight-item">
+            <span class="highlight-icon">→</span>
+            <p class="highlight-text"><strong>Architected from scratch</strong> the traffic system serving hundreds of concurrent vehicles</p>
+          </div>
+          <div class="highlight-item">
+            <span class="highlight-icon">→</span>
+            <p class="highlight-text"><strong>Unified physics interface</strong> between player and NPC vehicles — physics improvements propagated automatically to all traffic</p>
+          </div>
+          <div class="highlight-item">
+            <span class="highlight-icon">→</span>
+            <p class="highlight-text"><strong>Re-engineered CitySample</strong> vehicle awareness, speed regulation, and cornering for simulation-grade fidelity</p>
+          </div>
+          <div class="highlight-item">
+            <span class="highlight-icon">→</span>
+            <p class="highlight-text"><strong>Led a team of up to 3 AI developers</strong> — defined architecture, reviewed code, delegated implementation</p>
+          </div>
+          <div class="highlight-item">
+            <span class="highlight-icon">→</span>
+            <p class="highlight-text">Vehicle-to-vehicle and vehicle-to-player <strong>interaction systems</strong> at scale</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAKAR -->
+    <div class="project-card featured reveal">
+      <div class="project-meta">
+        <span class="project-type aaa">AAA · Saber Interactive Porto</span>
+        <span class="project-year">2020 – 2022</span>
+        <span class="project-platforms">PC · PS5 · Xbox</span>
+      </div>
+      <h3 class="project-title">Dakar Desert Rally</h3>
+      <p class="project-role">Role: <span>Physics Programmer</span></p>
+
+      <div class="project-body">
+        <div>
+          <p class="project-desc">
+            The largest off-road rally racing game ever developed, covering the full Dakar Rally route. 
+            I joined as Junior Physics Programmer and grew into the Physics Programmer role across 
+            the full production cycle — from prototype to gold master.
+          </p>
+          <p class="project-desc">
+            As <strong>sole developer</strong> of motorcycle physics, I built the full simulation stack 
+            from scratch — handling the unique dynamics of two-wheeled vehicles including balance, 
+            lean physics, and terrain response. Beyond motorcycles, I worked extensively on 
+            <strong>suspension systems, collision detection, and vehicle handling</strong> across the full fleet.
+          </p>
+          <div class="tech-list">
+            <span class="tech-tag">Unreal Engine</span>
+            <span class="tech-tag">PhysX</span>
+            <span class="tech-tag">Chaos</span>
+            <span class="tech-tag">C++</span>
+            <span class="tech-tag">Vehicle Physics</span>
+            <span class="tech-tag">Suspension</span>
+          </div>
+        </div>
+
+        <div class="highlights">
+          <p class="highlight-label">Key Contributions</p>
+          <div class="highlight-item">
+            <span class="highlight-icon">→</span>
+            <p class="highlight-text"><strong>Sole developer</strong> of motorcycle physics — built from scratch across the full production cycle</p>
+          </div>
+          <div class="highlight-item">
+            <span class="highlight-icon">→</span>
+            <p class="highlight-text">Deep work on <strong>suspension systems</strong> across multiple vehicle types</p>
+          </div>
+          <div class="highlight-item">
+            <span class="highlight-icon">→</span>
+            <p class="highlight-text">Implemented and tuned <strong>collision detection and vehicle handling</strong> to PlayStation and Xbox first-party standards</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INDIE ROW -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">
+
+      <!-- MAZE RACER -->
+      <div class="project-card reveal">
+        <div class="project-meta">
+          <span class="project-type">Indie · Solo</span>
+          <span class="project-year">2024</span>
+          <span class="project-platforms">iOS · Android</span>
+        </div>
+        <h3 class="project-title" style="font-size: clamp(20px, 2.5vw, 28px);">Maze Racer</h3>
+        <p class="project-role">Role: <span>Solo Developer</span></p>
+        <p class="project-desc">
+          Mobile maze racing game built end-to-end solo. Handled <strong>full development cycle</strong>: 
+          gameplay programming, Firebase backend, analytics pipeline (Firebase → BigQuery), 
+          monetisation via IronSource/LevelPlay, Meta Ads campaigns, and App Store optimisation.
+        </p>
+        <div class="tech-list">
+          <span class="tech-tag">Unity</span>
+          <span class="tech-tag">C#</span>
+          <span class="tech-tag">Firebase</span>
+          <span class="tech-tag">BigQuery</span>
+          <span class="tech-tag">iOS/Android</span>
+        </div>
+      </div>
+
+      <!-- CONNECT COLORS -->
+      <div class="project-card reveal">
+        <div class="project-meta">
+          <span class="project-type">Indie · Solo</span>
+          <span class="project-year">2024</span>
+          <span class="project-platforms">iOS · Android</span>
+        </div>
+        <h3 class="project-title" style="font-size: clamp(20px, 2.5vw, 28px);">Connect Colors</h3>
+        <p class="project-role">Role: <span>Solo Developer</span></p>
+        <p class="project-desc">
+          Mobile logic puzzle game shipped independently. Handled all aspects from 
+          <strong>gameplay design and programming</strong> to App Store keyword strategy, 
+          screenshot optimisation, and store listing copy.
+        </p>
+        <div class="tech-list">
+          <span class="tech-tag">Unity</span>
+          <span class="tech-tag">C#</span>
+          <span class="tech-tag">Firebase</span>
+          <span class="tech-tag">iOS/Android</span>
+          <span class="tech-tag">ASO</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-header reveal">
+    <span class="section-num">02</span>
+    <h2 class="section-title">About</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-text reveal">
+      <p>
+        I'm a gameplay programmer based in <strong>Porto, Portugal</strong> with 6+ years of professional 
+        experience shipping vehicle simulation games at AAA scale. I care deeply about 
+        <strong>physics feel, AI behaviour, and systems that scale</strong> — the kind of 
+        work that makes a game feel alive.
+      </p>
+      <p>
+        Most of my career has been at <strong>Saber Interactive Porto</strong>, where I grew from 
+        Junior Physics Programmer on Dakar Desert Rally to Lead AI Programmer on Road Kings. 
+        I like owning systems end-to-end — from architecture decisions to final polish.
+      </p>
+      <p>
+        Outside of AAA work, I ship indie mobile games solo to keep my full-stack 
+        development skills sharp — from gameplay to analytics to user acquisition.
+      </p>
+      <p>
+        I'm currently open to new opportunities in gameplay programming, with a 
+        particular interest in vehicle simulation, AI systems, and anything built in Unreal Engine.
+      </p>
+    </div>
+
+    <div class="skills-block reveal">
+      <div class="skill-group">
+        <p class="skill-group-label">Core</p>
+        <div class="skill-items">
+          <span class="skill-item">Unreal Engine (C++)</span>
+          <span class="skill-item">Vehicle Physics</span>
+          <span class="skill-item">AI Systems</span>
+          <span class="skill-item">Systems Design</span>
+          <span class="skill-item">PhysX / Chaos</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <p class="skill-group-label">Also</p>
+        <div class="skill-items">
+          <span class="skill-item">Unity (C#)</span>
+          <span class="skill-item">Mass Entity</span>
+          <span class="skill-item">OOP</span>
+          <span class="skill-item">Performance Profiling</span>
+          <span class="skill-item">Perforce</span>
+          <span class="skill-item">Scrum</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <p class="skill-group-label">Indie Stack</p>
+        <div class="skill-items">
+          <span class="skill-item">Firebase</span>
+          <span class="skill-item">BigQuery</span>
+          <span class="skill-item">AWS</span>
+          <span class="skill-item">iOS / Android</span>
+          <span class="skill-item">Meta Ads</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <p class="skill-group-label">Languages</p>
+        <div class="skill-items">
+          <span class="skill-item">Portuguese — Native</span>
+          <span class="skill-item">English — Full Professional</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONTACT -->
+<section id="contact" class="contact-section">
+  <h2 class="contact-big reveal">
+    Let's<br><span>work</span><br>together
+  </h2>
+  <div class="contact-links reveal">
+    <a href="mailto:jose_miguel_pereira@hotmail.com" class="btn">Email Me</a>
+    <a href="https://linkedin.com/in/josemm-pereira" target="_blank" class="btn btn-ghost">LinkedIn</a>
+  </div>
+</section>
+
+<footer>
+  <span>José Pereira · Gameplay Programmer</span>
+  <span>Porto, Portugal · 2026</span>
+</footer>
+
+<script>
+  // Nav scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
